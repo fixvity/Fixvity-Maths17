@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mean, Median, Mode & Range Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --blue:#2563eb;
+  --bg:#f4f6fb;
+  --card:#ffffff;
+  --muted:#6b7280;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+  background:var(--bg);
+  color:#111827;
+}
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:16px;
+}
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:0 12px 30px rgba(0,0,0,.08);
+  padding:18px;
+  margin-bottom:16px;
+}
+h1{
+  margin:0;
+  color:var(--blue);
+}
+.subtitle{
+  color:var(--muted);
+  margin-top:6px;
+}
+label{
+  font-weight:600;
+  font-size:14px;
+}
+textarea{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  margin-bottom:14px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  font-size:15px;
+  resize:vertical;
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:var(--blue);
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+}
+button.secondary{
+  background:#eef2ff;
+  color:#111;
+  margin-top:10px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr}
+}
+.result-box{
+  background:#f9fafb;
+  border-radius:10px;
+  padding:14px;
+}
+.step{
+  background:#f3f4f6;
+  border-radius:8px;
+  padding:10px;
+  margin-bottom:8px;
+}
+.badge{
+  display:inline-block;
+  padding:4px 10px;
+  background:#e0e7ff;
+  color:#1e3a8a;
+  border-radius:999px;
+  font-size:12px;
+  margin-bottom:6px;
+}
+.error{
+  color:#dc2626;
+  font-weight:600;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<!-- INPUT -->
+<div class="card">
+<h1>Mean, Median, Mode & Range Calculator</h1>
+<p class="subtitle">Accurate statistics • Handles no-mode cases • Explain like a teacher</p>
+
+<label>Data set (comma, space or line separated)</label>
+<textarea id="data" rows="3">20, 45, 35, 60</textarea>
+
+<label>
+  <input type="checkbox" id="teach" checked>
+  Explain like a teacher
+</label>
+
+<button onclick="calculate()">Calculate</button>
+<button class="secondary" onclick="resetAll()">Reset</button>
+</div>
+
+<!-- OUTPUT -->
+<div class="grid">
+<div class="card">
+<h3>Results</h3>
+<div id="result" class="result-box"></div>
+</div>
+
+<div class="card">
+<h3>Step-by-Step</h3>
+<div id="steps"></div>
+</div>
+</div>
+
+</div>
+
+<script>
+function calculate(){
+  const raw = document.getElementById("data").value;
+  const teach = document.getElementById("teach").checked;
+  const resultBox = document.getElementById("result");
+  const stepsBox = document.getElementById("steps");
+
+  resultBox.innerHTML="";
+  stepsBox.innerHTML="";
+
+  let values = raw
+    .split(/[\s,]+/)
+    .map(Number)
+    .filter(v => !isNaN(v));
+
+  if(values.length === 0){
+    resultBox.innerHTML = "<span class='error'>Please enter valid numbers.</span>";
+    return;
+  }
+
+  values.sort((a,b)=>a-b);
+  const n = values.length;
+
+  const mean = values.reduce((a,b)=>a+b,0)/n;
+
+  let median;
+  if(n % 2 === 0){
+    median = (values[n/2 - 1] + values[n/2]) / 2;
+  } else {
+    median = values[Math.floor(n/2)];
+  }
+
+  const freq = {};
+  values.forEach(v => freq[v] = (freq[v] || 0) + 1);
+  const maxFreq = Math.max(...Object.values(freq));
+  const modes = Object.keys(freq)
+    .filter(v => freq[v] === maxFreq)
+    .map(Number);
+
+  const modeText = (maxFreq === 1) ? "No mode" : modes.join(", ");
+
+  const range = values[n-1] - values[0];
+
+  resultBox.innerHTML = `
+    <span class="badge">Final Results</span><br>
+    Count (n): ${n}<br>
+    Mean: ${mean.toFixed(6)}<br>
+    Median: ${median}<br>
+    Mode: ${modeText}<br>
+    Minimum: ${values[0]}<br>
+    Maximum: ${values[n-1]}<br>
+    Range: ${range}
+  `;
+
+  if(teach){
+    stepsBox.innerHTML += `<div class="step">We first count the total number of values (n = ${n}).</div>`;
+    stepsBox.innerHTML += `<div class="step">Mean is calculated by dividing the sum of values by n.</div>`;
+    stepsBox.innerHTML += `<div class="step">Median is the middle value after sorting the data.</div>`;
+    stepsBox.innerHTML += `<div class="step">Mode is the most frequently occurring value.</div>`;
+    stepsBox.innerHTML += `<div class="step">Range is the difference between maximum and minimum values.</div>`;
+  }
+}
+
+function resetAll(){
+  document.getElementById("data").value = "";
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("steps").innerHTML = "";
+}
+</script>
+
+</body>
+</html>
